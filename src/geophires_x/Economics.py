@@ -1497,10 +1497,51 @@ class Economics:
             self.jobs_created_per_MW_electricity.Name] = floatParameter(
             "Estimated Jobs Created per MW of Electricity Produced",
             DefaultValue=2.13,
-            UnitType=Units.NONE,
+            UnitType=Units.JOBS_PER_ENERGY,
+            PreferredUnits=JobPerEnergyUnit.JOBSPERMW,
+            CurrentUnits=JobPerEnergyUnit.JOBSPERMW,
             Required=False,
             ToolTipText="Estimated jobs created per MW of electricity produced, per https://geothermal.org/resources/geothermal-basics"
         )
+
+
+
+        self.property_tax_MW_electricity = self.ParameterDict[
+            self.property_tax_MW_electricity.Name] = floatParameter(
+            "Estimated property tax per MW of Electricity Produced",
+            DefaultValue=0.210,
+            UnitType=Units.ROYALTY_PER_ENERGY,
+            PreferredUnits=RoyaltyPerEnergyUnit.ROYALTYPERMW,
+            CurrentUnits=RoyaltyPerEnergyUnit.ROYALTYPERMW,
+            Required=False,
+            ToolTipText="Estimated property tax per MW of electricity produced, per https://geothermal.org/resources/geothermal-basics"
+        )
+
+        self.gov_royalty_per_MW_electricity = self.ParameterDict[
+            self.gov_royalty_per_MW_electricity.Name] = floatParameter(
+            "Estimated governmental royalty per MW of Electricity Produced",
+            DefaultValue=.315,
+            UnitType=Units.ROYALTY_PER_ENERGY,
+            PreferredUnits=RoyaltyPerEnergyUnit.ROYALTYPERMW,
+            CurrentUnits=RoyaltyPerEnergyUnit.ROYALTYPERMW,
+            Required=False,
+            ToolTipText="Estimated government royalty per MW of electricity produced, per https://geothermal.org/resources/geothermal-basics"
+        )
+        self.total_royalty_per_MW_electricity = self.ParameterDict[
+            self.total_royalty_per_MW_electricity.Name] = floatParameter(
+            "Estimated total royalty per MW of Electricity Produced",
+            DefaultValue=0.420,
+            UnitType=Units.ROYALTY_PER_ENERGY,
+            PreferredUnits=RoyaltyPerEnergyUnit.ROYALTYPERMW,
+            CurrentUnits=RoyaltyPerEnergyUnit.ROYALTYPERMW,
+            Required=False,
+            ToolTipText="Estimated total royalty per MW of electricity produced, per https://geothermal.org/resources/geothermal-basics"
+        )
+
+
+
+
+
 
         # local variable initialization
         self.CAPEX_cost_electricity_plant = 0.0
@@ -1813,7 +1854,29 @@ class Economics:
         )
         self.jobs_created = self.OutputParameterDict[self.jobs_created.Name] = OutputParameter(
             Name="Estimated Jobs Created",
-            UnitType=Units.NONE,
+            UnitType=Units.JOBS,
+            PreferredUnits=JobsUnit.JOBS,
+            CurrentUnits=JobsUnit.JOBS,
+        )
+
+
+        self.property_tax_created = self.OutputParameterDict[self.property_tax_created.Name] = OutputParameter(
+            Name="Estimated amount of property tax will be paid",
+            UnitType=Units.CURRENCY,
+            PreferredUnits=CurrencyUnit.MDOLLARS,
+            CurrentUnits=CurrencyUnit.MDOLLARS
+        )
+        self.total_royalty = self.OutputParameterDict[self.total_royalty.Name] = OutputParameter(
+            Name="Estimated total royalty that will have to be paid ",
+            UnitType=Units.CURRENCY,
+            PreferredUnits=CurrencyUnit.MDOLLARS,
+            CurrentUnits = CurrencyUnit.MDOLLARS
+        )
+        self.gov_royalty = self.OutputParameterDict[self.gov_royalty.Name] = OutputParameter(
+            Name="Estimated Jobs Created",
+            UnitType=Units.CURRENCY,
+            PreferredUnits=CurrencyUnit.MDOLLARS,
+            CurrentUnits = CurrencyUnit.MDOLLARS
         )
 
         model.logger.info(f'Complete {__class__!s}: {sys._getframe().f_code.co_name}')
@@ -2891,6 +2954,18 @@ class Economics:
         self.jobs_created.value = round(
             np.average(model.surfaceplant.ElectricityProduced.quantity().to(
                 'MW').magnitude * self.jobs_created_per_MW_electricity.value))
+
+        self.property_tax_created.value = (
+            np.average(model.surfaceplant.ElectricityProduced.quantity().to(
+                'MW').magnitude * self.property_tax_MW_electricity.value))
+
+        self.total_royalty_per_MW_electricity.value = (
+            np.average(model.surfaceplant.ElectricityProduced.quantity().to(
+                'MW').magnitude * self.total_royalty_per_MW_electricity.value))
+
+        self.gov_royalty_per_MW_electricity.value = (
+            np.average(model.surfaceplant.ElectricityProduced.quantity().to(
+                'MW').magnitude * self.gov_royalty_per_MW_electricity.value))
 
         model.logger.info(f'complete {__class__!s}: {sys._getframe().f_code.co_name}')
 
